@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     //MARK: Properties
+    
+    @Environment (\.managedObjectContext) var managedObjectContext
     @State private var showingAddItemView: Bool = false
     
     
@@ -26,7 +28,7 @@ struct ContentView: View {
                     Image(systemName: "plus")
                 }//: Add button
                 .sheet(isPresented: $showingAddItemView) {
-                    AddItemView()
+                    AddItemView().environment(\.managedObjectContext, self.managedObjectContext)
                 }
             )
         }//: Navigation

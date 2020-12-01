@@ -9,9 +9,13 @@ import SwiftUI
 
 struct AddItemView: View {
     @Environment (\.presentationMode) var presentationMode
+    @Environment (\.managedObjectContext) var managedObjectContext
     //MARK: - Properties
     @State private var name: String = ""
     @State private var priority: String = "Normal"
+    @State private var errorShowing: Bool = false
+    @State private var errorTitle: String = ""
+    @State private var errorMessage: String = ""
     
     let priorities = ["High", "Normal", "Low"]
     
@@ -31,7 +35,25 @@ struct AddItemView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     Button(action: {
-                        print("Add a new item")
+                        if self.name != "" {
+                            let toDoItem = ToDoItem(context: self.managedObjectContext)
+                            toDoItem.name = self.name
+                            toDoItem.priority = self.priority
+                            
+                            do {
+                                try self.managedObjectContext.save()
+                                print("New to do item: \(toDoItem.name ?? ""), Priority: \(toDoItem.name ?? "")")
+                            } catch {
+                                print(error)
+                            }
+                        } else {
+                            self.errorShowing = true
+                            self.errorTitle = "Invalid Name"
+                            self.errorMessage = "Make sure to enter something for the \n new to-do item"
+                            return
+                        }
+                        self.presentationMode.wrappedValue.dismiss()
+                        
                     }) {
                         Text("Save")
                     }// SAVE button
@@ -46,6 +68,9 @@ struct AddItemView: View {
                                     Image(systemName: "xmark")
                                 }
             )
+            .alert(isPresented: $errorShowing, content: {
+                Alert(title: Text(errorTitle), message: Text(errorMessage), dismissButton: .default(Text("ok")))
+            })
         } // Navigation
     }
 }
